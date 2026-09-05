@@ -25,6 +25,7 @@ export interface DailyEntry {
     author: string;
   };
   notes?: string;
+  aiAnalysis?: string;
   updatedAt: string;
 }
 

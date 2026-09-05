@@ -9,24 +9,29 @@ import {
   Sun, 
   Moon, 
   ArrowRight,
-  BookOpen
+  BookOpen,
+  FileDown
 } from 'lucide-react';
-import { DailyEntry } from '../types';
+import { DailyEntry, WeeklyReflection } from '../types';
 import { formatDateKey, formatRussianFullDate, parseDateKey } from '../utils/dateUtils';
+import { ExportPdfModal } from './ExportPdfModal';
 
 interface ArchiveViewProps {
   entries: Record<string, DailyEntry>;
   streak: number;
+  reflections?: Record<string, WeeklyReflection>;
   onSelectDate: (dateKey: string) => void;
 }
 
 export const ArchiveView: React.FC<ArchiveViewProps> = ({
   entries,
   streak,
+  reflections = {},
   onSelectDate,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentCalendarDate, setCurrentCalendarDate] = useState(() => new Date());
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   // Statistics calculation
   const allEntriesList = Object.values(entries) as DailyEntry[];
@@ -83,6 +88,28 @@ export const ArchiveView: React.FC<ArchiveViewProps> = ({
 
   return (
     <div id="archive-view-container" className="w-full max-w-5xl mx-auto space-y-6">
+      {/* Archive Top Header & Action */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
+        <div>
+          <h2 className="font-serif italic text-2xl sm:text-3xl text-[#38332E] dark:text-[#EAE5D9]">
+            Архив и воспоминания
+          </h2>
+          <p className="text-xs text-[#827768] dark:text-[#A0988A] font-serif mt-0.5">
+            История ваших мыслей, утренних намерений и вечерних осознаний
+          </p>
+        </div>
+        <button
+          id="download-entries-pdf-btn"
+          type="button"
+          onClick={() => setIsExportModalOpen(true)}
+          className="px-4 py-2.5 rounded-2xl bg-[#4F5938] hover:bg-[#3D452B] text-white text-xs font-serif font-bold shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 self-start sm:self-auto cursor-pointer"
+          title="Сгенерировать и скачать PDF с записями за неделю или месяц для печати"
+        >
+          <FileDown className="w-4 h-4" />
+          <span>Скачать записи (PDF)</span>
+        </button>
+      </div>
+
       {/* Top Stats Overview in Bento Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-[#FFFDF9] dark:bg-[#1E1B17] border border-[#E5E1D8] dark:border-[#383127] rounded-3xl p-5 shadow-sm transition-colors">
@@ -286,6 +313,15 @@ export const ArchiveView: React.FC<ArchiveViewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* PDF Export & Print Modal */}
+      <ExportPdfModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        entries={entries}
+        reflections={reflections}
+        streak={streak}
+      />
     </div>
   );
 };

@@ -313,6 +313,7 @@ export default function App() {
             <ArchiveView
               entries={entries}
               streak={streak}
+              reflections={reflections}
               onSelectDate={(dateKey) => {
                 handleDateChange(dateKey);
                 handleTabChange('diary');
