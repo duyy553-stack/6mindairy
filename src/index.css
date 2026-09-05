@@ -1,0 +1,199 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #F7F4EC;
+    color: #38332E;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  html.dark body {
+    background-color: #171513;
+    color: #EAE5D9;
+  }
+}
+
+.font-serif-book {
+  font-family: 'Lora', Georgia, 'Times New Roman', serif;
+}
+
+/* Realistic Book Casing & Paper Spreads */
+.book-cover-frame {
+  background-color: #EFE7DA;
+  border: 1px solid #DCD1C0;
+  box-shadow: 
+    0 4px 6px -1px rgba(50, 40, 30, 0.05),
+    0 15px 35px -5px rgba(50, 40, 30, 0.12),
+    0 25px 50px -12px rgba(50, 40, 30, 0.15);
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+html.dark .book-cover-frame {
+  background-color: #231F1B;
+  border-color: #38332C;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.3),
+    0 15px 35px -5px rgba(0, 0, 0, 0.4),
+    0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* Open Book Dual-Page Spread */
+.book-double-spread {
+  background-color: #FFFDF9;
+  border: 1px solid #E6DDD0;
+  box-shadow: 
+    0 1px 2px rgba(45, 35, 25, 0.04),
+    0 4px 12px rgba(45, 35, 25, 0.06),
+    inset 0 0 80px rgba(235, 226, 210, 0.35);
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+html.dark .book-double-spread {
+  background-color: #1C1916;
+  border-color: #332D25;
+  box-shadow: 
+    0 1px 2px rgba(0, 0, 0, 0.4),
+    0 4px 16px rgba(0, 0, 0, 0.5),
+    inset 0 0 80px rgba(0, 0, 0, 0.55);
+}
+
+/* Open Book Center Gutter / Spine Fold Crease */
+.book-gutter-left {
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(60, 48, 36, 0.015) 50%,
+    rgba(60, 48, 36, 0.06) 100%
+  );
+}
+
+html.dark .book-gutter-left {
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(0, 0, 0, 0.15) 50%,
+    rgba(0, 0, 0, 0.45) 100%
+  );
+}
+
+.book-gutter-right {
+  background: linear-gradient(
+    to right,
+    rgba(60, 48, 36, 0.06) 0%,
+    rgba(60, 48, 36, 0.015) 50%,
+    transparent 100%
+  );
+}
+
+html.dark .book-gutter-right {
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.45) 0%,
+    rgba(0, 0, 0, 0.15) 50%,
+    transparent 100%
+  );
+}
+
+/* Notebook Ruled Line Input */
+.journal-ruled-input {
+  background-color: transparent;
+  border: none;
+  border-bottom: 1px dashed #D6CAB8;
+  border-radius: 0;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  padding-top: 0.35rem;
+  padding-bottom: 0.45rem;
+  color: #2D2722;
+  font-family: 'Lora', Georgia, serif;
+  transition: all 0.2s ease;
+}
+
+.journal-ruled-input:focus {
+  outline: none;
+  border-bottom: 1.5px solid #8C7355;
+  background-color: rgba(254, 252, 246, 0.7);
+}
+
+html.dark .journal-ruled-input {
+  border-bottom: 1px dashed #473E33;
+  color: #EAE5D9;
+}
+
+html.dark .journal-ruled-input:focus {
+  border-bottom: 1.5px solid #D4A373;
+  background-color: rgba(40, 35, 30, 0.45);
+}
+
+/* Hanging Ribbon Bookmark (Ляссе) */
+.bookmark-ribbon {
+  position: absolute;
+  top: -10px;
+  right: 56px;
+  width: 24px;
+  height: 85px;
+  background: linear-gradient(180deg, #A85843 0%, #BA624B 75%, #924734 100%);
+  box-shadow: 2px 4px 10px rgba(50, 20, 10, 0.25);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 10px), 0 100%);
+  z-index: 25;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+}
+
+.bookmark-ribbon:hover {
+  transform: translateY(6px);
+}
+
+/* Stacked Book Pages Thickness Effect */
+.book-stacked-edges {
+  box-shadow: 
+    1px 1px 0 #EBE2D4,
+    2px 2px 0 #E3D9C9,
+    3px 3px 0 #DCD1C0,
+    4px 4px 0 #D4C8B6,
+    6px 6px 14px rgba(45, 35, 25, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+html.dark .book-stacked-edges {
+  box-shadow: 
+    1px 1px 0 #2A251F,
+    2px 2px 0 #241F1A,
+    3px 3px 0 #1E1A16,
+    4px 4px 0 #181512,
+    6px 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+/* Vintage Paper Card */
+.paper-card {
+  background-color: #FFFDF9;
+  border: 1px solid #E5DCD0;
+  border-radius: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(50, 40, 30, 0.04);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+html.dark .paper-card {
+  background-color: #1E1B17;
+  border-color: #383127;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+}
+
+.bento-card {
+  background-color: #FFFDF9;
+  border: 1px solid #E5DCD0;
+  border-radius: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(50, 40, 30, 0.04);
+}
+
+.bento-card-hover {
+  transition: all 0.2s ease-in-out;
+}
+.bento-card-hover:hover {
+  border-color: #D2C4B1;
+  box-shadow: 0 6px 16px 0 rgba(80, 65, 50, 0.08);
+}
+

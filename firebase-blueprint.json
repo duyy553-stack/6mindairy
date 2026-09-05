@@ -1,0 +1,24 @@
+{
+  "entities": {
+    "UserEntry": {
+      "fields": {
+        "dateKey": { "type": "string" },
+        "morning": { "type": "map" },
+        "evening": { "type": "map" },
+        "updatedAt": { "type": "string" }
+      }
+    },
+    "UserHabits": {
+      "fields": {
+        "habits": { "type": "array" },
+        "updatedAt": { "type": "string" }
+      }
+    },
+    "UserReflections": {
+      "fields": {
+        "reflections": { "type": "map" },
+        "updatedAt": { "type": "string" }
+      }
+    }
+  }
+}
