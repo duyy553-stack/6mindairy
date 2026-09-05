@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -51,6 +51,31 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAIAnalysis,
 }) => {
   const isCurrentDateToday = isToday(currentDateKey);
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      // Always show header at the very top of the page
+      if (currentScrollY <= 40) {
+        setIsHeaderVisible(true);
+      } else if (currentScrollY > lastScrollY && currentScrollY - lastScrollY > 6) {
+        // Scrolling DOWN -> hide header completely to maximize diary reading/writing space
+        setIsHeaderVisible(false);
+      } else if (currentScrollY < lastScrollY && lastScrollY - currentScrollY > 6) {
+        // Scrolling UP -> reveal header smoothly
+        setIsHeaderVisible(true);
+      }
+
+      lastScrollY = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handlePrevDay = () => {
     onDateChange(addDays(currentDateKey, -1));
@@ -65,7 +90,9 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="w-full bg-[#FFFDF9]/95 dark:bg-[#1A1815]/95 backdrop-blur-md border-b border-[#E6DDD0] dark:border-[#2D2821] sticky top-0 z-30 shadow-2xs transition-colors duration-200">
+    <header className={`w-full bg-[#FFFDF9]/95 dark:bg-[#1A1815]/95 backdrop-blur-md border-b border-[#E6DDD0] dark:border-[#2D2821] sticky top-0 z-30 shadow-2xs transition-all duration-300 ease-in-out ${
+      isHeaderVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none shadow-none'
+    }`}>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3.5">
         {/* Top bar: Title + Streaks + Quick Actions */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-3 border-b border-[#EFE8DC] dark:border-[#2B2620]">

@@ -17,7 +17,7 @@ import {
 import confetti from 'canvas-confetti';
 import { DailyEntry, DailyQuote } from '../types';
 import { getQuoteForDate, getRandomDifferentQuote, QUOTES_COLLECTION } from '../data/quotes';
-import { playChime } from '../utils/sound';
+import { playChime, playPageTurnSound } from '../utils/sound';
 import { formatRussianFullDate, addDays } from '../utils/dateUtils';
 
 interface DailySpreadProps {
@@ -35,8 +35,17 @@ export const DailySpread: React.FC<DailySpreadProps> = ({
 }) => {
   // Mobile / layout tab selector: 'all' (split book), 'morning', or 'evening'
   const [activeView, setActiveView] = useState<'all' | 'morning' | 'evening'>('all');
+  const [spreadFlipClass, setSpreadFlipClass] = useState<string>('');
   const [quoteIndexOffset, setQuoteIndexOffset] = useState<number>(0);
   const [ribbonMessage, setRibbonMessage] = useState<string | null>(null);
+
+  const handleSwitchView = (newView: 'all' | 'morning' | 'evening') => {
+    if (newView === activeView) return;
+    const anim = newView === 'evening' ? 'animate-page-flip-next' : 'animate-page-flip-prev';
+    setSpreadFlipClass(anim);
+    setActiveView(newView);
+    playPageTurnSound();
+  };
 
   // Compute daily quote
   const baseQuote = getQuoteForDate(entry.date);
@@ -255,7 +264,7 @@ export const DailySpread: React.FC<DailySpreadProps> = ({
         <div className="flex items-center gap-1 bg-[#EFE8DC] dark:bg-[#25211D] p-1 rounded-2xl border border-[#DCD1C0] dark:border-[#383127]">
           <button
             id="view-all-btn"
-            onClick={() => setActiveView('all')}
+            onClick={() => handleSwitchView('all')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-serif transition-all ${
               activeView === 'all'
                 ? 'bg-[#FFFDF9] dark:bg-[#1C1916] text-[#38332E] dark:text-[#EAE5D9] font-bold shadow-2xs'
@@ -266,7 +275,7 @@ export const DailySpread: React.FC<DailySpreadProps> = ({
           </button>
           <button
             id="view-morning-btn"
-            onClick={() => setActiveView('morning')}
+            onClick={() => handleSwitchView('morning')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-serif flex items-center gap-1.5 transition-all ${
               activeView === 'morning'
                 ? 'bg-[#E9EDC9] dark:bg-[#2B3220] text-[#4F5938] dark:text-[#D9E2A8] font-bold shadow-2xs'
@@ -279,7 +288,7 @@ export const DailySpread: React.FC<DailySpreadProps> = ({
           </button>
           <button
             id="view-evening-btn"
-            onClick={() => setActiveView('evening')}
+            onClick={() => handleSwitchView('evening')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-serif flex items-center gap-1.5 transition-all ${
               activeView === 'evening'
                 ? 'bg-[#FEFAE0] dark:bg-[#342718] text-[#7A5A35] dark:text-[#F3D7AB] font-bold shadow-2xs'
@@ -326,8 +335,12 @@ export const DailySpread: React.FC<DailySpreadProps> = ({
           </div>
         )}
 
-        {/* OPEN BOOK DOUBLE-PAGE SPREAD */}
-        <div className="book-double-spread rounded-2xl overflow-hidden relative">
+        {/* OPEN BOOK DOUBLE-PAGE SPREAD WITH 3D FLIP */}
+        <div 
+          key={activeView} 
+          className={`book-double-spread rounded-2xl overflow-hidden relative ${spreadFlipClass}`}
+          onAnimationEnd={() => setSpreadFlipClass('')}
+        >
           <div className={`grid ${
             activeView === 'all' 
               ? 'grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-[#E6DDD0] dark:divide-[#2E2820]' 

@@ -28,6 +28,7 @@ import {
   loadUserReflectionsFromFirestore, 
   saveReflectionsToFirestore 
 } from './utils/firestoreSync';
+import { playChime, playPageTurnSound } from './utils/sound';
 import { Header } from './components/Header';
 import { DailySpread } from './components/DailySpread';
 import { HabitTrackerView } from './components/HabitTrackerView';
@@ -40,6 +41,25 @@ import { Check } from 'lucide-react';
 export default function App() {
   const [currentDateKey, setCurrentDateKey] = useState<string>(() => formatDateKey(new Date()));
   const [activeTab, setActiveTab] = useState<ActiveTab>('diary');
+  const [flipAnimation, setFlipAnimation] = useState<'animate-page-flip-next' | 'animate-page-flip-prev' | 'animate-tab-flip' | ''>('');
+  const [animationKey, setAnimationKey] = useState<number>(0);
+
+  const handleDateChange = useCallback((newDateKey: string) => {
+    if (newDateKey === currentDateKey) return;
+    const direction = newDateKey > currentDateKey ? 'animate-page-flip-next' : 'animate-page-flip-prev';
+    setFlipAnimation(direction);
+    setAnimationKey((prev) => prev + 1);
+    setCurrentDateKey(newDateKey);
+    playPageTurnSound();
+  }, [currentDateKey]);
+
+  const handleTabChange = useCallback((newTab: ActiveTab) => {
+    if (newTab === activeTab) return;
+    setFlipAnimation('animate-tab-flip');
+    setAnimationKey((prev) => prev + 1);
+    setActiveTab(newTab);
+    playPageTurnSound();
+  }, [activeTab]);
   
   // Data State
   const [entries, setEntries] = useState<Record<string, DailyEntry>>({});
@@ -218,17 +238,17 @@ export default function App() {
         if (e.key === 'ArrowLeft') {
           const [y, m, d] = currentDateKey.split('-').map(Number);
           const prev = new Date(y, m - 1, d - 1);
-          setCurrentDateKey(formatDateKey(prev));
+          handleDateChange(formatDateKey(prev));
         } else if (e.key === 'ArrowRight') {
           const [y, m, d] = currentDateKey.split('-').map(Number);
           const next = new Date(y, m - 1, d + 1);
-          setCurrentDateKey(formatDateKey(next));
+          handleDateChange(formatDateKey(next));
         }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentDateKey, activeTab]);
+  }, [currentDateKey, activeTab, handleDateChange]);
 
   if (!isLoaded) {
     return (
@@ -248,52 +268,58 @@ export default function App() {
         theme={theme}
         currentUser={currentUser}
         onToggleTheme={handleToggleTheme}
-        onTabChange={setActiveTab}
-        onDateChange={setCurrentDateKey}
+        onTabChange={handleTabChange}
+        onDateChange={handleDateChange}
         onOpenAbout={() => setIsAboutOpen(true)}
         onGoogleSignIn={handleGoogleSignIn}
         onSignOut={handleSignOut}
         onOpenAIAnalysis={() => setIsAIModalOpen(true)}
       />
 
-      {/* Main Screen Content */}
-      <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-6xl mx-auto w-full">
-        {activeTab === 'diary' && (
-          <DailySpread
-            entry={currentEntry}
-            onUpdateEntry={handleUpdateEntry}
-            onNavigateDate={setCurrentDateKey}
-            onOpenAIAnalysis={() => setIsAIModalOpen(true)}
-          />
-        )}
+      {/* Main Screen Content with 3D Page Flip Transition Stage */}
+      <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-6xl mx-auto w-full diary-flip-stage">
+        <div 
+          key={`page-flip-${animationKey}-${activeTab}-${currentDateKey}`}
+          className={flipAnimation}
+          onAnimationEnd={() => setFlipAnimation('')}
+        >
+          {activeTab === 'diary' && (
+            <DailySpread
+              entry={currentEntry}
+              onUpdateEntry={handleUpdateEntry}
+              onNavigateDate={handleDateChange}
+              onOpenAIAnalysis={() => setIsAIModalOpen(true)}
+            />
+          )}
 
-        {activeTab === 'habits' && (
-          <HabitTrackerView
-            currentDateKey={currentDateKey}
-            habits={habits}
-            onUpdateHabits={handleUpdateHabits}
-          />
-        )}
+          {activeTab === 'habits' && (
+            <HabitTrackerView
+              currentDateKey={currentDateKey}
+              habits={habits}
+              onUpdateHabits={handleUpdateHabits}
+            />
+          )}
 
-        {activeTab === 'weekly' && (
-          <WeeklyQuestionsView
-            currentDateKey={currentDateKey}
-            reflections={reflections}
-            onUpdateReflection={handleUpdateReflection}
-            onNavigateDate={setCurrentDateKey}
-          />
-        )}
+          {activeTab === 'weekly' && (
+            <WeeklyQuestionsView
+              currentDateKey={currentDateKey}
+              reflections={reflections}
+              onUpdateReflection={handleUpdateReflection}
+              onNavigateDate={handleDateChange}
+            />
+          )}
 
-        {activeTab === 'archive' && (
-          <ArchiveView
-            entries={entries}
-            streak={streak}
-            onSelectDate={(dateKey) => {
-              setCurrentDateKey(dateKey);
-              setActiveTab('diary');
-            }}
-          />
-        )}
+          {activeTab === 'archive' && (
+            <ArchiveView
+              entries={entries}
+              streak={streak}
+              onSelectDate={(dateKey) => {
+                handleDateChange(dateKey);
+                handleTabChange('diary');
+              }}
+            />
+          )}
+        </div>
       </main>
 
       {/* Minimal Footer with gentle book aesthetic */}
