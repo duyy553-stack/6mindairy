@@ -297,13 +297,13 @@ export const ArchiveView: React.FC<ArchiveViewProps> = ({
 
                     {greatMomentsText && (
                       <p className="text-xs text-[#524B42] dark:text-[#C4BCAD] line-clamp-1 italic font-serif">
-                        <span className="font-semibold text-[#D4A373] not-italic">Прекрасные события:</span> {greatMomentsText}
+                        <span className="font-semibold text-[#D4A373] not-italic">Значимое за день:</span> {greatMomentsText}
                       </p>
                     )}
 
                     {item.morning.affirmation && (
                       <p className="text-[11px] text-[#827768] dark:text-[#9C9385] italic font-serif">
-                        «Я {item.morning.affirmation}»
+                        <span className="font-semibold text-[#7C8363] dark:text-[#B4BE82] not-italic">Опорная мысль:</span> «{item.morning.affirmation.replace(/^«|»$/g, '')}»
                       </p>
                     )}
                   </div>

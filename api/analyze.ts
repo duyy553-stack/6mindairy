@@ -90,11 +90,11 @@ export default async function handler(req: any, res: any) {
 
 ДАННЫЕ ДНЕВНИКА:
 ${morningGratitude ? `[Утро] Я благодарен за:\n  - ${morningGratitude}` : ''}
-${morningMakesGreat ? `[Утро] Что сделает этот день прекрасным:\n  - ${morningMakesGreat}` : ''}
-${morningAffirmation ? `[Утро] Позитивная установка / аффирмация: ${morningAffirmation}` : ''}
-${eveningGoodDeed ? `[Вечер] Доброе дело дня: ${eveningGoodDeed}` : ''}
-${eveningImprovement ? `[Вечер] Что можно было сделать лучше: ${eveningImprovement}` : ''}
-${eveningGreatMoments ? `[Вечер] Прекрасные события и моменты:\n  - ${eveningGreatMoments}` : ''}
+${morningMakesGreat ? `[Утро] Что я могу сделать сегодня, чтобы почувствовать себя устойчивее (маленькие шаги):\n  - ${morningMakesGreat}` : ''}
+${morningAffirmation ? `[Утро] Опорная мысль на сегодня (внутреннее напоминание): ${morningAffirmation}` : ''}
+${eveningGoodDeed ? `[Вечер] Что я сделал сегодня такого, что важно для меня (без внешней оценки): ${eveningGoodDeed}` : ''}
+${eveningImprovement ? `[Вечер] Что я сегодня понял о себе (опыт, инсайт): ${eveningImprovement}` : ''}
+${eveningGreatMoments ? `[Вечер] Что сегодня было значимым / За что могу сказать себе спасибо:\n  - ${eveningGreatMoments}` : ''}
 ${eveningMood ? `[Вечер] Оценка самочувствия/настроения: ${eveningMood} из 5` : ''}
 
 СФОРМУЛИРУЙ АНАЛИЗ В ДЕЛИКАТНОМ, МУДРОМ И СТРУКТУРИРОВАННОМ ВИДЕ (используй Markdown):

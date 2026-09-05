@@ -429,16 +429,16 @@ export const DailySpread: React.FC<DailySpreadProps> = ({
                     </div>
                   </div>
 
-                  {/* SECTION 2: What makes today great (3 items) */}
+                  {/* SECTION 2: Grounding step towards stability */}
                   <div className="space-y-2 pt-3">
                     <div className="flex items-baseline justify-between">
                       <p className="text-xs uppercase tracking-wider font-serif font-bold text-[#6B7F5E] dark:text-[#B4BE82]">
-                        2. Что сделает этот день прекрасным...
+                        2. Что я могу сделать сегодня, чтобы почувствовать себя устойчивее?
                       </p>
-                      <span className="text-[10px] font-serif italic text-[#A89F91] dark:text-[#7C7263]">3 намерения</span>
+                      <span className="text-[10px] font-serif italic text-[#A89F91] dark:text-[#7C7263]">Маленькие шаги</span>
                     </div>
                     <p className="text-[11px] text-[#827768] dark:text-[#9C9385] font-serif italic">
-                      Ключевые дела или душевные решения, зависящие лично от вас.
+                      Какой один маленький шаг приблизит меня к тому, что я хочу? Не требует грандиозности, только честности.
                     </p>
 
                     <div className="space-y-3 pt-1">
@@ -454,10 +454,10 @@ export const DailySpread: React.FC<DailySpreadProps> = ({
                             onChange={(e) => handleMorningMakesGreatChange(idx, e.target.value)}
                             placeholder={
                               idx === 0
-                                ? 'Завершить важное дело с ясной головой...'
+                                ? 'Сделать паузу и выйти на 15-минутную прогулку без телефона...'
                                 : idx === 1
-                                ? '30 минут неспешной прогулки на свежем воздухе...'
-                                : 'Быть терпеливым и внимательным к окружающим...'
+                                ? 'Сделать один маленький шаг в деле, которое откладывал...'
+                                : 'Приготовить вкусный теплый чай и никуда не спешить...'
                             }
                             className="w-full text-sm font-serif italic journal-ruled-input placeholder:text-[#A89F91]/50 dark:placeholder:text-[#7C7263]/50 text-[#2D2722] dark:text-[#EAE5D9]"
                           />
@@ -466,30 +466,33 @@ export const DailySpread: React.FC<DailySpreadProps> = ({
                     </div>
                   </div>
 
-                  {/* SECTION 3: Positive Affirmation (1 item) */}
+                  {/* SECTION 3: Grounding thought for today */}
                   <div className="space-y-2 pt-3">
                     <div className="flex items-baseline justify-between">
                       <p className="text-xs uppercase tracking-wider font-serif font-bold text-[#6B7F5E] dark:text-[#B4BE82]">
-                        3. Позитивная установка дня (аффирмация)
+                        3. Опорная мысль на сегодня
                       </p>
-                      <span className="text-[10px] font-serif italic text-[#A89F91] dark:text-[#7C7263]">Я...</span>
+                      <span className="text-[10px] font-serif italic text-[#A89F91] dark:text-[#7C7263]">Напоминание</span>
                     </div>
                     <p className="text-[11px] text-[#827768] dark:text-[#9C9385] font-serif italic">
-                      Кем и каким человеком вы сознательно выбираете быть сегодня?
+                      Не утверждение-лозунг, а внутреннее напоминание себе: например, «Я имею право делать что-то не идеально».
                     </p>
 
-                    <div className="flex items-end gap-2 pt-1">
-                      <span className="font-serif italic text-[#6B7F5E] dark:text-[#B4BE82] text-base font-bold pb-1">
-                        Я
+                    <div className="flex items-end gap-1.5 pt-1">
+                      <span className="font-serif italic text-[#6B7F5E] dark:text-[#B4BE82] text-sm font-bold pb-1 select-none">
+                        «
                       </span>
                       <input
                         id="morning-affirmation"
                         type="text"
                         value={entry.morning.affirmation || ''}
                         onChange={(e) => handleMorningAffirmationChange(e.target.value)}
-                        placeholder="спокоен, уверен в своих силах и открыт новым возможностям."
+                        placeholder="Я имею право делать что-то не идеально и беречь свои силы..."
                         className="w-full text-sm font-serif italic journal-ruled-input placeholder:text-[#A89F91]/50 dark:placeholder:text-[#7C7263]/50 text-[#2D2722] dark:text-[#EAE5D9]"
                       />
+                      <span className="font-serif italic text-[#6B7F5E] dark:text-[#B4BE82] text-sm font-bold pb-1 select-none">
+                        »
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -559,20 +562,20 @@ export const DailySpread: React.FC<DailySpreadProps> = ({
                   {/* Folio sub-title */}
                   <div className="text-center pb-1">
                     <span className="text-[11px] font-serif italic text-[#827768] dark:text-[#9C9385] tracking-wider uppercase">
-                      — Доброта, рост и вечерняя радость —
+                      — Осознание, бережность и вечерний покой —
                     </span>
                   </div>
 
-                  {/* SECTION 4: Good Deed (1 item) */}
+                  {/* SECTION 4: What I did that was important to me (1 item) */}
                   <div className="space-y-2">
                     <div className="flex items-baseline justify-between">
                       <p className="text-xs uppercase tracking-wider font-serif font-bold text-[#A85843] dark:text-[#E07A5F]">
-                        1. Мой добрый поступок сегодня...
+                        1. Что я сделал сегодня такого, что важно для меня?
                       </p>
-                      <span className="text-[10px] font-serif italic text-[#A89F91] dark:text-[#7C7263]">Забота о других</span>
+                      <span className="text-[10px] font-serif italic text-[#A89F91] dark:text-[#7C7263]">Без внешней оценки</span>
                     </div>
                     <p className="text-[11px] text-[#827768] dark:text-[#9C9385] font-serif italic">
-                      Что хорошего я сделал для мира? Поддержка, доброе слово, улыбка или внимание.
+                      Действие, забота или выбор без оглядки на внешнюю оценку — то, что имеет значение лично для вас.
                     </p>
 
                     <div className="pt-1">
@@ -581,22 +584,22 @@ export const DailySpread: React.FC<DailySpreadProps> = ({
                         type="text"
                         value={entry.evening.goodDeed || ''}
                         onChange={(e) => handleEveningGoodDeedChange(e.target.value)}
-                        placeholder="Искренне поддержал друга в сложный момент, помог коллеге..."
+                        placeholder="Вовремя остановился отдохнуть, честно сказал «нет», позаботился о себе..."
                         className="w-full text-sm font-serif italic journal-ruled-input placeholder:text-[#A89F91]/50 dark:placeholder:text-[#7C7263]/50 text-[#2D2722] dark:text-[#EAE5D9]"
                       />
                     </div>
                   </div>
 
-                  {/* SECTION 5: How I will improve (1 item) */}
+                  {/* SECTION 5: What I learned about myself (1 item) */}
                   <div className="space-y-2 pt-3">
                     <div className="flex items-baseline justify-between">
                       <p className="text-xs uppercase tracking-wider font-serif font-bold text-[#A85843] dark:text-[#E07A5F]">
-                        2. Как я стану лучше / Чему я научился...
+                        2. Что я сегодня понял о себе?
                       </p>
-                      <span className="text-[10px] font-serif italic text-[#A89F91] dark:text-[#7C7263]">Осознанный рост</span>
+                      <span className="text-[10px] font-serif italic text-[#A89F91] dark:text-[#7C7263]">Опыт и инсайт</span>
                     </div>
                     <p className="text-[11px] text-[#827768] dark:text-[#9C9385] font-serif italic">
-                      Что можно было сделать иначе — без самобичевания, а с пониманием и заботой.
+                      Какой опыт или внутреннее открытие я заберу с собой? Без самобичевания, а с бережным пониманием.
                     </p>
 
                     <div className="pt-1">
@@ -605,22 +608,22 @@ export const DailySpread: React.FC<DailySpreadProps> = ({
                         type="text"
                         value={entry.evening.improvement || ''}
                         onChange={(e) => handleEveningImprovementChange(e.target.value)}
-                        placeholder="В следующий раз сделаю вдох и паузу перед эмоциональным ответом..."
+                        placeholder="Понял, что спешка лишает меня сил, и мне нужна пауза перед важным ответом..."
                         className="w-full text-sm font-serif italic journal-ruled-input placeholder:text-[#A89F91]/50 dark:placeholder:text-[#7C7263]/50 text-[#2D2722] dark:text-[#EAE5D9]"
                       />
                     </div>
                   </div>
 
-                  {/* SECTION 6: Great moments today (3 items) */}
+                  {/* SECTION 6: Meaningful moments / Self-gratitude (3 items) */}
                   <div className="space-y-2 pt-3">
                     <div className="flex items-baseline justify-between">
                       <p className="text-xs uppercase tracking-wider font-serif font-bold text-[#A85843] dark:text-[#E07A5F]">
-                        3. Прекрасные события сегодняшнего дня...
+                        3. Что сегодня было значимым для меня?
                       </p>
-                      <span className="text-[10px] font-serif italic text-[#A89F91] dark:text-[#7C7263]">3 момента счастья</span>
+                      <span className="text-[10px] font-serif italic text-[#A89F91] dark:text-[#7C7263]">Спасибо себе</span>
                     </div>
                     <p className="text-[11px] text-[#827768] dark:text-[#9C9385] font-serif italic">
-                      3 момента радости, открытий, тепла или маленьких личных побед.
+                      3 значимых момента дня или то, за что я могу сказать себе спасибо сегодня.
                     </p>
 
                     <div className="space-y-3 pt-1">
@@ -636,9 +639,9 @@ export const DailySpread: React.FC<DailySpreadProps> = ({
                             onChange={(e) => handleEveningGreatMomentsChange(idx, e.target.value)}
                             placeholder={
                               idx === 0
-                                ? 'Вкусный совместный ужин с семьей...'
+                                ? 'Сказал себе спасибо за спокойствие и терпение в сложном разговоре...'
                                 : idx === 1
-                                ? 'Красивый свет заката сквозь осенние деревья...'
+                                ? 'Тихие 15 минут утреннего кофе в лучах солнца без спешки...'
                                 : 'Уютное чтение книги перед сном в тишине...'
                             }
                             className="w-full text-sm font-serif italic journal-ruled-input placeholder:text-[#A89F91]/50 dark:placeholder:text-[#7C7263]/50 text-[#2D2722] dark:text-[#EAE5D9]"

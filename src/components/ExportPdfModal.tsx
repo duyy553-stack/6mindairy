@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { 
   X, 
   FileDown, 
@@ -11,7 +11,8 @@ import {
   Sun, 
   Moon, 
   Sparkles,
-  AlertCircle
+  AlertCircle,
+  Compass
 } from 'lucide-react';
 import { DailyEntry, WeeklyReflection } from '../types';
 import { 
@@ -20,6 +21,39 @@ import {
   generatePdfFromPages 
 } from '../utils/pdfGenerator';
 import { formatRussianFullDate } from '../utils/dateUtils';
+
+const WEEKLY_ROAD_QUESTIONS = [
+  {
+    key: 'q1' as const,
+    num: '1',
+    title: 'Какое решение на этой неделе я принял сам, не оглядываясь на чужое мнение?',
+    subtitle: 'Мускул субъектности',
+  },
+  {
+    key: 'q2' as const,
+    num: '2',
+    title: 'Где я почувствовал сопротивление — и что оно мне пыталось сказать?',
+    subtitle: 'Сопротивление как вестник',
+  },
+  {
+    key: 'q3' as const,
+    num: '3',
+    title: 'В какой момент я позволил себе быть несовершенным, и что я тогда ощутил?',
+    subtitle: 'Право на неидеальность',
+  },
+  {
+    key: 'q4' as const,
+    num: '4',
+    title: 'Что на этой неделе оказалось для меня важным, даже если это не принесло результата?',
+    subtitle: 'Осмысленность вместо гонки',
+  },
+  {
+    key: 'q5' as const,
+    num: '5',
+    title: 'За что я могу себя поблагодарить — без всяких условий?',
+    subtitle: 'Безусловная опора',
+  },
+];
 
 interface ExportPdfModalProps {
   isOpen: boolean;
@@ -68,6 +102,14 @@ export const ExportPdfModal: React.FC<ExportPdfModalProps> = ({
 
   const filteredEntries = filterEntriesForExport(entries, options);
 
+  // Filter non-empty weekly reflections to include in the PDF
+  const relevantReflections = useMemo(() => {
+    if (!includeWeeklyQuestions || !reflections) return [];
+    return Object.values(reflections).filter((r) => {
+      return Object.values(r.answers || {}).some((ans) => (ans || '').trim().length > 0);
+    });
+  }, [includeWeeklyQuestions, reflections]);
+
   // Group entries into pages (up to 2 days per A4 page to maintain generous typography and readability)
   const entriesPerPage = 2;
   const pages: DailyEntry[][] = [];
@@ -75,10 +117,12 @@ export const ExportPdfModal: React.FC<ExportPdfModalProps> = ({
     pages.push(filteredEntries.slice(i, i + entriesPerPage));
   }
 
+  const totalSheetsCount = pages.length + relevantReflections.length;
+
   // Handle PDF generation via html2canvas & jsPDF
   const handleDownloadPdf = async () => {
     if (!printableContainerRef.current) return;
-    if (filteredEntries.length === 0) return;
+    if (filteredEntries.length === 0 && relevantReflections.length === 0) return;
 
     setIsGenerating(true);
     setProgressText('Подготовка макета страниц...');
@@ -265,7 +309,7 @@ export const ExportPdfModal: React.FC<ExportPdfModalProps> = ({
                 )}
                 <div>
                   <span className="font-bold text-[#38332E] dark:text-[#EAE5D9]">Утренние страницы</span>
-                  <p className="text-[11px] text-[#827768]">Благодарности, цели дня, аффирмация</p>
+                  <p className="text-[11px] text-[#827768]">Благодарности, шаги устойчивости, опорная мысль</p>
                 </div>
               </button>
 
@@ -281,7 +325,7 @@ export const ExportPdfModal: React.FC<ExportPdfModalProps> = ({
                 )}
                 <div>
                   <span className="font-bold text-[#38332E] dark:text-[#EAE5D9]">Вечерние страницы</span>
-                  <p className="text-[11px] text-[#827768]">Добрые дела, моменты радости, настроение</p>
+                  <p className="text-[11px] text-[#827768]">Важное для себя, инсайты, значимые моменты</p>
                 </div>
               </button>
 
@@ -312,8 +356,8 @@ export const ExportPdfModal: React.FC<ExportPdfModalProps> = ({
                   <Square className="w-4 h-4 text-[#827768]" />
                 )}
                 <div>
-                  <span className="font-bold text-[#38332E] dark:text-[#EAE5D9]">Итоги недели</span>
-                  <p className="text-[11px] text-[#827768]">Ответы на 5 еженедельных вопросов</p>
+                  <span className="font-bold text-[#38332E] dark:text-[#EAE5D9]">Итоги недели (карта местности)</span>
+                  <p className="text-[11px] text-[#827768]">5 дорожных вопросов осознанности</p>
                 </div>
               </button>
             </div>
@@ -326,9 +370,10 @@ export const ExportPdfModal: React.FC<ExportPdfModalProps> = ({
               <div>
                 <p className="text-xs font-serif font-bold text-[#38332E] dark:text-[#EAE5D9]">
                   Найдено записей: {filteredEntries.length} {filteredEntries.length === 1 ? 'день' : 'дней'}
+                  {includeWeeklyQuestions && relevantReflections.length > 0 && ` • ${relevantReflections.length} нед. итогов`}
                 </p>
                 <p className="text-[11px] text-[#827768] dark:text-[#A0988A]">
-                  Период: {getPeriodLabel()} • Примерный объем: {Math.max(1, pages.length)} стр. A4
+                  Период: {getPeriodLabel()} • Примерный объем: {Math.max(1, totalSheetsCount)} стр. A4
                 </p>
               </div>
             </div>
@@ -467,7 +512,7 @@ export const ExportPdfModal: React.FC<ExportPdfModalProps> = ({
 
                           {goalsList.length > 0 && (
                             <div className="text-xs">
-                              <span className="font-semibold text-[#4F5938]">Что сделает этот день прекрасным:</span>
+                              <span className="font-semibold text-[#4F5938]">Шаги для устойчивости:</span>
                               <ul className="list-disc pl-5 mt-0.5 space-y-0.5 text-[#3D352A]">
                                 {goalsList.map((item, idx) => (
                                   <li key={idx}>{item}</li>
@@ -478,7 +523,7 @@ export const ExportPdfModal: React.FC<ExportPdfModalProps> = ({
 
                           {entry.morning?.affirmation && (
                             <div className="text-xs italic bg-white p-2 rounded-lg border border-[#E6DDD0]">
-                              <span className="font-semibold not-italic text-[#4F5938]">Установка:</span> «Я {entry.morning.affirmation}»
+                              <span className="font-semibold not-italic text-[#4F5938]">Опорная мысль:</span> «{entry.morning.affirmation.replace(/^«|»$/g, '')}»
                             </div>
                           )}
                         </div>
@@ -493,19 +538,19 @@ export const ExportPdfModal: React.FC<ExportPdfModalProps> = ({
 
                           {entry.evening?.goodDeed && (
                             <div className="text-xs text-[#3D352A]">
-                              <span className="font-semibold text-[#7A5A35]">Доброе дело:</span> {entry.evening.goodDeed}
+                              <span className="font-semibold text-[#7A5A35]">Важно для меня:</span> {entry.evening.goodDeed}
                             </div>
                           )}
 
                           {entry.evening?.improvement && (
                             <div className="text-xs text-[#3D352A]">
-                              <span className="font-semibold text-[#7A5A35]">Что сделать лучше:</span> {entry.evening.improvement}
+                              <span className="font-semibold text-[#7A5A35]">Что понял о себе:</span> {entry.evening.improvement}
                             </div>
                           )}
 
                           {eveningMoments.length > 0 && (
                             <div className="text-xs">
-                              <span className="font-semibold text-[#7A5A35]">Прекрасные события дня:</span>
+                              <span className="font-semibold text-[#7A5A35]">Значимое за день / Спасибо себе:</span>
                               <ul className="list-disc pl-5 mt-0.5 space-y-0.5 text-[#3D352A]">
                                 {eveningMoments.map((item, idx) => (
                                   <li key={idx}>{item}</li>
@@ -536,11 +581,75 @@ export const ExportPdfModal: React.FC<ExportPdfModalProps> = ({
             {/* Bottom Sheet Footer */}
             <div className="pt-4 border-t border-[#DCD1C0] flex items-center justify-between text-[10px] text-[#827768]">
               <span>Печатный выпуск «Дневник 6 минут»</span>
-              <span>«Счастье — это не пункт назначения, а способ путешествовать»</span>
-              <span>Лист {pageIndex + 1}</span>
+              <span>«Сопротивление — не враг, а сторож. Мы учимся замечать дорогу, а не судить себя»</span>
+              <span>Лист {pageIndex + 1} из {totalSheetsCount}</span>
             </div>
           </div>
         ))}
+
+        {/* Weekly Reflection Sheets */}
+        {includeWeeklyQuestions && relevantReflections.map((refl, rIdx) => {
+          const sheetNum = pages.length + rIdx + 1;
+          return (
+            <div
+              key={`weekly-sheet-${refl.weekId}`}
+              className="pdf-page-sheet bg-[#FFFFFF] text-[#2D2821] p-10 font-serif flex flex-col justify-between"
+              style={{
+                width: '794px',
+                minHeight: '1120px',
+                boxSizing: 'border-box',
+                pageBreakAfter: 'always',
+              }}
+            >
+              <div>
+                <div className="flex items-center justify-between pb-4 border-b-2 border-[#2D2821] mb-6">
+                  <div>
+                    <h1 className="text-xl font-bold tracking-tight uppercase font-serif flex items-center gap-2">
+                      <Compass className="w-5 h-5 text-[#4F5938]" />
+                      <span>Итоги недели • Карта местности</span>
+                    </h1>
+                    <p className="text-[11px] text-[#6B5E50] tracking-wide mt-0.5">
+                      Пять дорожных вопросов осознанности без суда и внешних оценок
+                    </p>
+                  </div>
+                  <div className="text-right text-[11px] text-[#6B5E50]">
+                    <p className="font-semibold text-[#2D2821]">Неделя {refl.weekNumber} • {refl.year} год</p>
+                    <p>Страница {sheetNum} из {totalSheetsCount}</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  {WEEKLY_ROAD_QUESTIONS.map((q) => {
+                    const ans = refl.answers[q.key];
+                    if (!ans || !ans.trim()) return null;
+                    return (
+                      <div key={q.key} className="border border-[#DCD1C0] rounded-xl p-4 bg-[#FAF8F3] space-y-1.5">
+                        <div className="flex items-baseline justify-between gap-2">
+                          <p className="text-xs font-bold text-[#4F5938]">
+                            {q.num}. {q.title}
+                          </p>
+                          <span className="text-[10px] italic text-[#827768] shrink-0">
+                            {q.subtitle}
+                          </span>
+                        </div>
+                        <p className="text-xs italic text-[#2D2722] bg-white p-2.5 rounded-lg border border-[#E6DDD0] leading-relaxed whitespace-pre-line">
+                          {ans}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Bottom Sheet Footer */}
+              <div className="pt-4 border-t border-[#DCD1C0] flex items-center justify-between text-[10px] text-[#827768]">
+                <span>Печатный выпуск «Дневник 6 минут»</span>
+                <span>«Сопротивление — не враг, а сторож. Мы учимся замечать дорогу, а не судить себя»</span>
+                <span>Лист {sheetNum} из {totalSheetsCount}</span>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
