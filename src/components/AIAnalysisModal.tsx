@@ -85,10 +85,19 @@ export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
         body: JSON.stringify({ entry }),
       });
 
-      const data = await res.json();
+      const rawText = await res.text();
+      let data: any = null;
+      try {
+        data = JSON.parse(rawText);
+      } catch {
+        if (res.status === 503 || res.status === 504 || rawText.toLowerCase().includes('demand') || rawText.toLowerCase().includes('timeout')) {
+          throw new Error('Модель Gemini испытывает кратковременную пиковую нагрузку. Пожалуйста, повторите попытку.');
+        }
+        throw new Error(`Временный сбой связи с сервером (код ${res.status}). Нажмите кнопку повтора.`);
+      }
 
       if (!res.ok) {
-        throw new Error(data.error || 'Ошибка при запросе к ИИ-серверу.');
+        throw new Error(data?.error || 'Ошибка при запросе к ИИ-серверу.');
       }
 
       setAnalysis(data.analysis);
@@ -157,14 +166,24 @@ export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
         {/* Content Body */}
         <div className="p-6 overflow-y-auto flex-1 space-y-4">
           {error && (
-            <div className="p-4 rounded-2xl bg-[#FEF2F2] dark:bg-[#2D1717] border border-[#FCA5A5] dark:border-[#7F1D1D] text-[#991B1B] dark:text-[#FCA5A5] text-xs flex items-start gap-2.5">
-              <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-              <div>
-                <p className="font-medium">{error}</p>
-                <p className="mt-1 opacity-90">
-                  Убедитесь, что ваш API-ключ Gemini настроен в параметрах проекта.
-                </p>
+            <div className="p-4 rounded-2xl bg-[#FEF2F2] dark:bg-[#2D1717] border border-[#FCA5A5] dark:border-[#7F1D1D] text-[#991B1B] dark:text-[#FCA5A5] text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-medium">{error}</p>
+                  <p className="mt-1 opacity-90 text-[11px]">
+                    {error.includes('Ключ') || error.includes('API')
+                      ? 'Проверьте значение переменной GEMINI_API_KEY в настройках проекта.'
+                      : 'Сервер готов к работе. Нажмите кнопку справа, чтобы повторить.'}
+                  </p>
+                </div>
               </div>
+              <button
+                onClick={handleRunAnalysis}
+                className="px-3.5 py-1.5 rounded-xl bg-[#991B1B] text-white hover:bg-[#7F1D1D] font-serif transition-colors text-xs font-semibold shrink-0 cursor-pointer shadow-2xs self-start sm:self-auto"
+              >
+                Повторить
+              </button>
             </div>
           )}
 

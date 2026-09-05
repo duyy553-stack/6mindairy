@@ -1,37 +1,17 @@
-import express from 'express';
-import path from 'path';
 import { GoogleGenAI } from '@google/genai';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 let aiClient: GoogleGenAI | null = null;
 function getAI(): GoogleGenAI {
   if (!aiClient) {
     const key = process.env.GEMINI_API_KEY;
     if (!key) {
-      throw new Error('Ключ GEMINI_API_KEY не задан в переменных окружения. Укажите его в настройках проекта.');
+      throw new Error('Ключ GEMINI_API_KEY не найден в переменных окружения Vercel. Добавьте его в настройках проекта на Vercel.');
     }
     aiClient = new GoogleGenAI({ apiKey: key });
   }
   return aiClient;
 }
 
-const app = express();
-const PORT = 3000;
-
-app.use(express.json({ limit: '2mb' }));
-
-// Health and capability check
-app.get('/api/health', (_req, res) => {
-  res.json({
-    status: 'ok',
-    geminiConfigured: !!process.env.GEMINI_API_KEY,
-    model: 'gemini-3.8-flash',
-  });
-});
-
-// Helper for resilient generation with retries and fallback
 async function generateWithRetry(ai: GoogleGenAI, prompt: string, maxRetries = 3) {
   const models = ['gemini-3.8-flash', 'gemini-flash-latest'];
   let lastError: any = null;
@@ -49,7 +29,6 @@ async function generateWithRetry(ai: GoogleGenAI, prompt: string, maxRetries = 3
       } catch (err: any) {
         lastError = err;
         const msg = err?.message || '';
-        console.warn(`Model ${model} attempt ${attempt + 1} error:`, msg);
         if (attempt < maxRetries - 1 && (msg.includes('503') || msg.includes('high demand') || msg.includes('UNAVAILABLE'))) {
           await new Promise((resolve) => setTimeout(resolve, 800 * (attempt + 1)));
           continue;
@@ -62,10 +41,23 @@ async function generateWithRetry(ai: GoogleGenAI, prompt: string, maxRetries = 3
   throw lastError;
 }
 
-// AI analysis endpoint: reads between the lines
-app.post('/api/analyze', async (req, res) => {
+export default async function handler(req: any, res: any) {
+  // CORS support if needed
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Метод не поддерживается. Используйте POST.' });
+  }
+
   try {
-    const { entry } = req.body;
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    const entry = body?.entry;
 
     if (!entry) {
       return res.status(400).json({ error: 'Данные записи дневника не переданы.' });
@@ -73,7 +65,6 @@ app.post('/api/analyze', async (req, res) => {
 
     const ai = getAI();
 
-    // Prepare readable representations of the entries
     const morningGratitude = (entry.morning?.gratitude || []).filter(Boolean).join('\n  - ');
     const morningMakesGreat = (entry.morning?.makesGreat || []).filter(Boolean).join('\n  - ');
     const morningAffirmation = entry.morning?.affirmation || '';
@@ -88,7 +79,7 @@ app.post('/api/analyze', async (req, res) => {
 
     if (!hasAnyContent) {
       return res.status(400).json({ 
-        error: 'В дневнике за этот день пока нет текста для анализа. Заполните хотя бы одну строчку в утренней или вечерней странице.' 
+        error: 'В дневнике за этот день пока нет текста для анализа. Заполните хотя бы одну строчку.' 
       });
     }
 
@@ -124,51 +115,28 @@ ${eveningMood ? `[Вечер] Оценка самочувствия/настро
 
     const { text, model } = await generateWithRetry(ai, prompt, 3);
 
-    return res.json({ 
+    return res.status(200).json({ 
       analysis: text, 
       model 
     });
   } catch (error: any) {
-    console.error('Gemini API error:', error);
-    let msg = error?.message || 'Ошибка обращения к сервису анализа';
+    console.error('Vercel API error:', error);
+    let msg = error?.message || 'Ошибка сервера анализа';
     try {
       const parsed = JSON.parse(msg);
       if (parsed?.error?.message) {
         msg = parsed.error.message;
       }
     } catch {
-      // not JSON string
+      // not json
     }
 
-    if (msg.includes('Quota exceeded') || msg.includes('quota') || msg.includes('429') || msg.includes('rate-limits')) {
-      msg = 'Превышен лимит запросов бесплатного тарифа (5 запросов в минуту). Подождите 15–20 секунд или укажите свой собственный API-ключ с подпиской в настройках проекта.';
+    if (msg.includes('Quota exceeded') || msg.includes('quota') || msg.includes('429')) {
+      msg = 'Превышен лимит запросов бесплатного тарифа. Подождите 15-20 секунд или используйте свой платный ключ Gemini.';
     } else if (msg.includes('high demand') || msg.includes('503') || msg.includes('UNAVAILABLE')) {
-      msg = 'Модели Gemini в данный момент испытывают пиковую нагрузку в Google Cloud. Пожалуйста, повторите запрос через несколько секунд.';
+      msg = 'Сервер Gemini временно испытывает пиковую нагрузку. Пожалуйста, повторите попытку через пару секунд.';
     }
 
     return res.status(500).json({ error: msg });
   }
-});
-
-async function startServer() {
-  if (process.env.NODE_ENV !== 'production') {
-    const { createServer: createViteServer } = await import('vite');
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (_req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
-  }
-
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on http://0.0.0.0:${PORT}`);
-  });
 }
-
-startServer();
